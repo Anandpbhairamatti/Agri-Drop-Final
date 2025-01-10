@@ -90,4 +90,3 @@ document.getElementById('sellerForm').addEventListener('submit', async (e) => {
     }
 });
 
-

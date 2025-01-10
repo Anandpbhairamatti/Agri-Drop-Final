@@ -230,12 +230,32 @@
                 <input type="text" id="gstin" name="gstin" placeholder="Enter your GSTIN">
             </div>
 
-            <button type="submit">Register</button>
+            <button  onclick="registerSeller()">Register</button>
             <p>If already registred<a href="sellerlogin.html">click here</a> to login</p>
         </form>
         <p id="message"></p>
     </div>
+    <script>
+        let userState = {
+    isLoggedIn: localStorage.getItem('isLoggedIn') === 'true', // Check login status from localStorage
+    isSeller: localStorage.getItem('isSeller') === 'true', // Check if the user is a seller
+  };
+
+function registerSeller() {
+    // Simulate seller registration process
+    alert('Congratulations! You are now a seller.');
+    userState.isSeller = true;
+    localStorage.setItem('isSeller', 'true');
+        updateNavbar();
+
+    // Update localStorage to reflect the new status
+    localStorage.setItem('isSeller', 'true');
+
     
+  }
+
+
+    </script>
         
     </body>
     </html>

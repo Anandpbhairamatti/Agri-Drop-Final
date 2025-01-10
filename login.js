@@ -115,10 +115,11 @@ document.querySelector('#lform').addEventListener('submit', async function (e) {
         // Store token and user info in localStorage
         localStorage.setItem('authToken', token);
         localStorage.setItem('userEmail', user.email); // Store email or other user info as needed
+        localStorage.setItem('isLoggedIn', 'true'); // Set login status
 
         // Redirect to the dashboard or home page
         alert('Login successful!');
-        window.location.href = 'index.html'; // Update the path as per your application structure
+        window.location.href = 'index1.html'; // Update the path as per your application structure
     } catch (error) {
         console.error('Error during login:', error);
         switch (error.code) {

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        .purchase-detail img {
+            width: 100%;
+            height: auto;
+            max-width: 400px;
+            object-fit: contain;
+            margin-bottom: 20px;
+        }
+
+        .purchase-detail h3 {
+            font-size: 24px;
+            color: #333;
+        }
+
+        .purchase-detail p {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .price {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ff5f5f;
+        }
+
+        .checkout-button {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background-color: #ff5f5f;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background-color: #e04a4a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Complete Your Purchase</h2>
+        <div id="purchase-detail" class="purchase-detail"></div>
+    </div>
+
+    <script type="module">
+        // Get product details from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('id');
+        const category = urlParams.get('category');
+        const productName = urlParams.get('name');
+        const productPrice = urlParams.get('price');
+
+        // Display product details for purchase
+        const purchaseDetailContainer = document.getElementById("purchase-detail");
+        purchaseDetailContainer.innerHTML = `
+            <img src="path_to_image/${productId}.jpg" alt="Product Image"> <!-- Replace with actual image URL -->
+            <h3><strong>${productName}</strong></h3>
+            <p class="price"><strong>Rs:</strong> ${productPrice}</p>
+            <p><b>Category:</b> ${category}</p>
+            <div class="checkout-button">
+                <button class="btn" onclick="checkout()">Proceed to Checkout</button>
+            </div>
+        `;
+
+        // Checkout function
+        function checkout() {
+            alert("Proceeding to checkout...");
+            // Add your checkout logic here, such as collecting shipping info, payment, etc.
+            // You can also store order info in Firebase or any other service here
+        }
+    </script>
+</body>
+</html>

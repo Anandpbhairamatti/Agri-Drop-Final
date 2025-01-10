@@ -1,0 +1,241 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product</title>
+    <!-- <script type="module" src="addpro.js" defer></script> -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: #ff5f5f;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            background: #ff4242;
+        }
+
+        #quantityField {
+            display: none;
+        }
+
+        #qualityField {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Add Product</h2>
+        <form id="product-form">
+
+            <label for="product-name">Product Name</label>
+            <input type="text" id="product-name" placeholder="Enter product name" required>
+
+            <label for="category">Category</label>
+            <select id="category" name="category" onchange="toggleCategoryFields()" required>
+                <option value="">Select Category</option>
+                <option value="Pesticides">Pesticides</option>
+                <option value="Tools">Tools</option>
+                <option value="Biowaste">Biowaste</option>
+            </select>
+
+            <div id="qualityField">
+                <label for="quality">Quality</label>
+                <select id="quality">
+                    <option value="">Select Quality</option>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                </select>
+            </div>
+
+            <div id="quantityField">
+                <label for="quantity">Quantity</label>
+                <input type="number" id="quantity" name="quantity" placeholder="Enter quantity" required>
+            </div>
+
+            <label for="price">Price</label>
+            <input type="number" id="price" placeholder="Enter price" required>
+            
+            <label for="description">Description</label>
+            <textarea id="description" placeholder="Enter product description" rows="4" required></textarea>
+
+            <label for="poster">Image</label>
+            <input type="file" id="poster" required>
+
+            <button type="submit" class="btn">Submit</button>
+
+            <h6 style="text-align: center;">Back to <a href="../index1.html">Home</a></h6>
+
+        </form>
+    </div>
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+        import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBLCWmhmY1qc_szY7PkLHHooPPZSbTeXj4",
+            authDomain: "agridrop-5ffa8.firebaseapp.com",
+            databaseURL: "https://agridrop-5ffa8-default-rtdb.firebaseio.com",
+            projectId: "agridrop-5ffa8",
+            storageBucket: "agridrop-5ffa8.appspot.com",
+            messagingSenderId: "447104623367",
+            appId: "1:447104623367:web:4938333541fee115559ba2",
+            measurementId: "G-Z66S9DVKZX",
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        /**
+         * Encode a File object (image) into a Base64 string
+         * @param {File} file - Image file to be encoded
+         * @returns {Promise} - Resolves with the Base64 encoded string
+         */
+        function encodeFileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = (error) => reject(error);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Form submission handler
+        document.getElementById("product-form").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const name = document.getElementById("product-name").value.trim();
+            const category = document.getElementById("category").value;
+            const price = document.getElementById("price").value.trim();
+            const description = document.getElementById("description").value.trim();
+            const imageFile = document.getElementById("poster").files[0];
+            const quantity = document.getElementById("quantity").value||null;
+            const quality = document.getElementById("quality").value||null;
+            const sellerEmail = localStorage.getItem("sellerEmail"); // Retrieve seller email from localStorage
+
+            if (!imageFile) {
+                alert("Please select an image.");
+                return;
+            }
+
+            try {
+                // Convert image file to Base64
+                const base64Image = await encodeFileToBase64(imageFile);
+
+        //         async function saveProductWithSeller() {
+        //          const sellerEmail = localStorage.getItem("sellerEmail"); // Retrieve seller email from localStorage
+        //         if (!sellerEmail) {
+        //         alert("Seller email not found in localStorage.");
+        //         return;
+        //     }
+
+        // }
+
+                // Save product details in Firebase
+                const productRef = push(ref(database, `products/${category}`)); // Create a new product reference under the selected category
+                await set(productRef, {
+                    name,
+                    category,
+                    price,
+                    description,
+                    sellerEmail,
+                    image: base64Image,
+                    ...(category === 'Pesticides || Tools' && { quantity }),
+                    ...(category === 'Biowaste' && { quality }),
+                });
+
+                alert("Product uploaded successfully!");
+                window.location.href = '../index1.html';
+            } catch (error) {
+                console.error("Error uploading product: ", error);
+                alert("Error uploading product. Check the console for details.");
+            }
+        });
+
+        // Toggle visibility of category-specific 
+        // Toggle visibility of category-specific fields
+ function toggleCategoryFields() {
+    const category = document.getElementById("category").value;
+    const quantityField = document.getElementById("quantityField");
+    const qualityField = document.getElementById("qualityField");
+    const quantityInput = document.getElementById("quantity");
+    const qualityInput = document.getElementById("quality");
+
+    // Hide both fields initially
+    quantityField.style.display = "none";
+    qualityField.style.display = "none";
+    quantityInput.removeAttribute("required");
+    qualityInput.removeAttribute("required");
+
+    // Show specific field and set required attribute based on category selection
+    if (category === "Pesticides" || category === "Tools") {
+        quantityField.style.display = "block";
+        quantityInput.setAttribute("required", "required"); // Make quantity required
+    } else if (category === "Biowaste") {
+        qualityField.style.display = "block";
+        qualityInput.setAttribute("required", "required"); // Make quality required
+    }
+}
+
+// Ensure the function is globally available for use in the HTML's onchange event
+window.toggleCategoryFields = toggleCategoryFields;
+
+// Ensure the function is globally available for use in the HTML's onchange event
+window.toggleCategoryFields = toggleCategoryFields;
+
+        
+    </script>
+</body>
+</html>
+

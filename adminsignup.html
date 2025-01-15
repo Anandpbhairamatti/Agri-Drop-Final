@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Signup - Agridrop</title>
+    <link rel="stylesheet" href="adminsignup.css">
+    <script type="module" src="admin.js" defer></script>
+</head>
+<body>
+
+    <!-- Admin Sign-Up Form Container -->
+    <div class="form-container">
+        <h2>Admin Account Creation</h2>
+        <form id="adminSignupForm">
+            <label for="adminName">Full Name:</label>
+            <input type="text" id="adminName" name="adminName" required>
+
+            <label for="adminEmail">Email:</label>
+            <input type="email" id="adminEmail" name="adminEmail" required>
+
+            <label for="adminPassword">Password:</label>
+            <input type="password" id="adminPassword" name="adminPassword" required>
+
+            <label for="adminConfirmPassword">Confirm Password:</label>
+            <input type="password" id="adminConfirmPassword" name="adminConfirmPassword" required>
+
+            <label>
+                <input type="checkbox" required> I agree to the <a href="#">terms and conditions</a>
+            </label>
+
+            <button type="submit">Sign Up as Admin</button>
+        </form>
+        <p>Already have an admin account? <a href="adminlogin.html">Login</a></p>
+    </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+import { getFirestore, setDoc, doc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBLCWmhmY1qc_szY7PkLHHooPPZSbTeXj4",
+    authDomain: "agridrop-5ffa8.firebaseapp.com",
+    projectId: "agridrop-5ffa8",
+    storageBucket: "agridrop-5ffa8.appspot.com",
+    messagingSenderId: "447104623367",
+    appId: "1:447104623367:web:4938333541fee115559ba2",
+    measurementId: "G-Z66S9DVKZX",
+};
+
+// Initialize Firebase, Firestore, and Authentication
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const database = getFirestore(app);
+
+// Admin Signup Handler
+const adminSignupForm = document.querySelector('#adminSignupForm');
+adminSignupForm.addEventListener('submit', async function (e) {
+    e.preventDefault(); // Prevent form submission
+
+    const adminName = document.getElementById('adminName').value.trim();
+    const adminEmail = document.getElementById('adminEmail').value.trim();
+    const adminPassword = document.getElementById('adminPassword').value;
+    const adminConfirmPassword = document.getElementById('adminConfirmPassword').value;
+
+    const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
+    if (adminPassword !== adminConfirmPassword) {
+        alert('Passwords do not match.');
+        return;
+    }
+    if (!passwordRegex.test(adminPassword)) {
+        alert('Password must be 6-20 characters, include at least 1 digit, 1 uppercase, and 1 lowercase.');
+        return;
+    }
+
+    try {
+        // Create admin account with Firebase Authentication
+        const adminCredential = await createUserWithEmailAndPassword(auth, adminEmail, adminPassword);
+        const adminUser = adminCredential.user;
+
+        // Send email verification
+        await sendEmailVerification(adminUser);
+
+        // Store admin data in Firestore
+        await setDoc(doc(database, 'admins', adminUser.uid), {
+            name: adminName,
+            email: adminEmail,
+            role: 'admin',
+        });
+
+        alert('Admin account created successfully! Please verify your email.');
+        window.location.href = 'adminlogin.html'; // Redirect to login page
+    } catch (error) {
+        console.error('Error during admin signup:', error);
+        alert(`An error occurred: ${error.message}`);
+    }
+});
+
+    </script>
+
+</body>
+</html>

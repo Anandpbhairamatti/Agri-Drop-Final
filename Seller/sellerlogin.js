@@ -87,7 +87,7 @@ document.querySelector('#sellerLoginForm').addEventListener('submit', async func
         // Store token and user info in localStorage
         localStorage.setItem('authToken', token);
         localStorage.setItem('sellerEmail', user.email); // Store email or other seller info as needed
-
+        localStorage.setItem('isSeller', 'true');
         // Redirect to the seller dashboard or home page
         alert('Seller login successful!');
         window.location.href = '../index1.html'; // Update the path as per your application structure

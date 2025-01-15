@@ -5,91 +5,230 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Cart</title>
     <style>
-        /* Add your styles here */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        h2 {
-            text-align: center;
-            color: #333;
-        }
-        .cart-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .cart-item img {
-            width: 80px;
-            height: 80px;
-            object-fit: contain;
-            margin-right: 20px;
-        }
-        .cart-item-details {
-            flex: 1;
-        }
-        .cart-item h3 {
-            font-size: 18px;
-            color: #333;
-        }
-        .cart-item p {
-            font-size: 16px;
-            color: #666;
-        }
-        .remove-btn, .quantity-btn {
-            background-color: #ff5f5f;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .remove-btn:hover, .quantity-btn:hover {
-            background-color: #e04a4a;
-        }
-        .quantity-btn {
-            background-color: #3A964B;
-        }
-        .total-price {
-            font-size: 20px;
-            font-weight: bold;
-            color: #ff5f5f;
-            text-align: right;
-            margin-top: 20px;
-        }
-        .checkout-btn {
-            padding: 10px 20px;
-            background-color: #3A964B;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 20px;
-        }
-        .checkout-btn:hover {
-            background-color: #2a9d8f;
-        }
+      /* Global Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+}
+
+h1, h2, h3, p {
+    margin: 0;
+    padding: 0;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.3s ease;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+button:hover {
+    background-color: #3a964b;
+    transform: scale(1.05);
+}
+
+/* Navbar Styles */
+.navbar {
+    background-color: #3a964b;
+    width: 98%;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    z-index: 100;
+}
+
+.navbar h1 {
+    font-size: 28px;
+    font-weight: bold;
+    color: white;
+    margin: 0;
+}
+
+.navbar .nav-links {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+}
+
+.navbar .nav-links li {
+    transition: transform 0.3s ease;
+}
+
+.navbar .nav-links li:hover {
+    transform: scale(1.1);
+}
+
+.navbar .nav-links a {
+    color: white;
+    font-weight: 500;
+    padding: 8px 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.navbar .nav-links a:hover {
+    background-color: #2c7a3e;
+}
+
+.hamburger {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    display: none; /* Hide hamburger by default */
+}
+
+@media (max-width: 768px) {
+    .hamburger {
+        display: block; /* Show hamburger on small screens */
+    }
+
+    .nav-links {
+        display: none; /* Hide nav links by default */
+        flex-direction: column;
+        position: absolute;
+        top: 60px; /* Position below the navbar */
+        left: 0;
+        background-color: #3a964b;
+        width: 100%;
+        padding: 10px 0;
+        text-align: center;
+        z-index: 99;
+    }
+
+    .nav-links.active {
+        display: flex; /* Show nav links when active */
+    }
+
+    .nav-links li {
+        margin: 10px 0;
+    }
+}
+
+/* Main Content and Cart Styles */
+.container {
+    max-width: 800px;
+    margin: 100px auto 20px; /* Adjust for fixed navbar height */
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    text-align: center;
+    color: #333;
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.cart-item img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    margin-right: 20px;
+}
+
+.cart-item-details {
+    flex: 1;
+}
+
+.cart-item h3 {
+    font-size: 18px;
+    color: #333;
+}
+
+.cart-item p {
+    font-size: 16px;
+    color: #666;
+}
+
+.remove-btn, .quantity-btn {
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.remove-btn {
+    background-color: #ff5f5f;
+    color: white;
+}
+
+.remove-btn:hover {
+    background-color: #e04a4a;
+}
+
+.quantity-btn {
+    background-color: #3A964B;
+    color: white;
+}
+
+.quantity-btn:hover {
+    background-color: #2a9d8f;
+}
+
+.total-price {
+    font-size: 20px;
+    font-weight: bold;
+    color: #ff5f5f;
+    text-align: right;
+    margin-top: 20px;
+}
+
+.checkout-btn {
+    width: 100%;
+    padding: 10px 20px;
+    background-color: #3a964b;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.checkout-btn:hover {
+    background-color: #2a9d8f;
+}
+     
     </style>
+    
+    <script type="module" src="addtocart.js" defer></script>
 </head>
 <body>
+   
     <header>
         <nav class="navbar">
             <h1 class="logo">Agridrop</h1>
+            <button class="hamburger" aria-label="Toggle navigation">&#9776;</button>
+            <ul class="nav-links" id="navbar"></ul>
         </nav>
     </header>
+
     <div class="container">
         <h2>Your Cart</h2>
         <div id="cart-items-container"></div>
@@ -231,13 +370,21 @@
                 loadCartItems();
             }
         };
-
         document.getElementById("checkout-btn").onclick = () => {
-            alert("Proceeding to checkout...");
-            setTimeout(() => {
-                window.location.href = "checkout.html";
-            }, 500);
-        };
+    const totalPriceText = document.getElementById("total-price").textContent;
+    const totalAmount = totalPriceText.replace("Total: Rs ", "").trim();  // Extract numeric value
+
+    if (!isNaN(totalAmount) && totalAmount !== "") {
+        localStorage.setItem("totalAmount", totalAmount);  // Store only the numeric amount
+        alert("Proceeding to checkout...");
+        setTimeout(() => {
+            window.location.href = "checkout.html";  // Redirect to checkout page
+        }, 500);
+    } else {
+        alert("Error: Total amount is not valid.");
+    }
+};
+
     </script>
 </body>
 </html>

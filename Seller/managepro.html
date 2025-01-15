@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Managed Orders</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        .order-item {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+        }
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        .order-details {
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #3a964b;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #2a9d8f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Managed Orders</h2>
+        <div id="orders-list">
+            <!-- Managed orders will be loaded here -->
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBLCWmhmY1qc_szY7PkLHHooPPZSbTeXj4",
+            authDomain: "agridrop-5ffa8.firebaseapp.com",
+            databaseURL: "https://agridrop-5ffa8-default-rtdb.firebaseio.com",
+            projectId: "agridrop-5ffa8",
+            storageBucket: "agridrop-5ffa8.appspot.com",
+            messagingSenderId: "447104623367",
+            appId: "1:447104623367:web:4938333541fee115559ba2",
+            measurementId: "G-Z66S9DVKZX",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth();
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const sellerRef = doc(db, "sellers", user.uid);  // Seller's document
+                const sellerDoc = await getDoc(sellerRef);
+                if (sellerDoc.exists()) {
+                    const managedOrders = sellerDoc.data().managed || [];
+                    const ordersList = document.getElementById("orders-list");
+
+                    if (managedOrders.length === 0) {
+                        ordersList.innerHTML = "<p>No orders to manage.</p>";
+                    } else {
+                        managedOrders.forEach(order => {
+                            const orderDiv = document.createElement("div");
+                            orderDiv.classList.add("order-item");
+                            orderDiv.innerHTML = `
+                                <div class="order-details">
+                                    <p><strong>User:</strong> ${order.userEmail}</p>
+                                    <p><strong>Address:</strong> ${order.address.name}, ${order.address.address}, ${order.address.city}, ${order.address.state} - ${order.address.zip}</p>
+                                    <p><strong>Product:</strong> ${order.product.name}</p>
+                                    <p><strong>Payment ID:</strong> ${order.paymentId}</p>
+                                </div>
+                                <button onclick="confirmOrder('${order.paymentId}')">Confirm Order</button>
+                            `;
+                            ordersList.appendChild(orderDiv);
+                        });
+                    }
+                } else {
+                    alert("Seller not found.");
+                }
+            } else {
+                alert("Please log in to view your orders.");
+            }
+        });
+
+        async function confirmOrder(paymentId) {
+            const sellerDoc = await getDoc(doc(db, "sellers", user.uid));
+            const managedOrders = sellerDoc.data().managed || [];
+
+            // Find the order by paymentId
+            const orderIndex = managedOrders.findIndex(order => order.paymentId === paymentId);
+            if (orderIndex > -1) {
+                const order = managedOrders[orderIndex];
+
+                // Move to confirmed orders (optional logic)
+                await updateDoc(doc(db, "sellers", user.uid), {
+                    confirmed: arrayUnion(order),  // Assuming 'confirmed' is the field to track confirmed orders
+                    managed: managedOrders.filter(order => order.paymentId !== paymentId), // Remove from managed
+                });
+
+                alert(`Order with Payment ID: ${paymentId} has been confirmed.`);
+                location.reload();  // Reload the page to update the order list
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        h1, h2, h3, p {
+            margin: 0;
+            padding: 0;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #3a964b;
+            transform: scale(1.05);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 100px auto 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .order-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-right: 20px;
+        }
+
+        .order-item-details {
+            flex: 1;
+        }
+
+        .order-item h3 {
+            font-size: 18px;
+            color: #333;
+        }
+
+        .order-item p {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .cancel-btn {
+            background-color: #ff5f5f;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .cancel-btn:hover {
+            background-color: #e04a4a;
+        }
+
+    </style>
+    <link rel="stylesheet" href="../navbarstyle.css">
+    <script type="module" src="../navbarstyle.js"></script>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <h1 class="logo">Agridrop</h1>
+            <button class="hamburger" aria-label="Toggle navigation">
+                &#9776;
+            </button>
+            <ul class="nav-links" id="navbar">
+                <!-- Navigation links will be dynamically updated here -->
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h2>Your Orders</h2>
+        <div id="order-items-container"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+        import { getFirestore, doc, getDoc, updateDoc, arrayRemove } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBLCWmhmY1qc_szY7PkLHHooPPZSbTeXj4",
+            authDomain: "agridrop-5ffa8.firebaseapp.com",
+            databaseURL: "https://agridrop-5ffa8-default-rtdb.firebaseio.com",
+            projectId: "agridrop-5ffa8",
+            storageBucket: "agridrop-5ffa8.appspot.com",
+            messagingSenderId: "447104623367",
+            appId: "1:447104623367:web:4938333541fee115559ba2",
+            measurementId: "G-Z66S9DVKZX",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const firestore = getFirestore(app);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+
+        let user = null;
+
+        onAuthStateChanged(auth, (currentUser) => {
+            user = currentUser;
+            loadOrderItems();
+        });
+
+        async function loadOrderItems() {
+            if (!user) {
+                alert("Please log in to view your orders.");
+                return;
+            }
+
+            const userDocRef = doc(firestore, `users/${user.uid}`);
+            const userSnapshot = await getDoc(userDocRef);
+
+            if (userSnapshot.exists()) {
+                const orderedItems = userSnapshot.data().ordered || [];
+                const orderItemsContainer = document.getElementById("order-items-container");
+
+                if (orderedItems.length === 0) {
+                    orderItemsContainer.innerHTML = "<p>No orders found.</p>";
+                } else {
+                    orderItemsContainer.innerHTML = "";
+
+                    for (const item of orderedItems) {
+                        const productRef = ref(database, `products/${item.category}/${item.productId}`);
+                        const productSnapshot = await get(productRef);
+
+                        if (productSnapshot.exists()) {
+                            const product = productSnapshot.val();
+
+                            const orderItemDiv = document.createElement("div");
+                            orderItemDiv.classList.add("order-item");
+                            orderItemDiv.setAttribute("data-product-id", item.productId);
+
+                            orderItemDiv.innerHTML = `
+                                <img src="${product.image}" alt="Product Image">
+                                <div class="order-item-details">
+                                    <h3>${product.name}</h3>
+                                    <p>Price: Rs ${product.price}</p>
+                                    <p>Quantity: ${item.quantity}</p>
+                                </div>
+                                <button class="cancel-btn" onclick="cancelOrder('${item.productId}')">Cancel Order</button>
+                            `;
+
+                            orderItemsContainer.appendChild(orderItemDiv);
+                        }
+                    }
+                }
+            } else {
+                alert("No orders found.");
+            }
+        }
+
+        window.cancelOrder = async function(productId) {
+            if (!user) {
+                alert("Please log in to cancel orders.");
+                return;
+            }
+
+            const userDocRef = doc(firestore, `users/${user.uid}`);
+            const userSnapshot = await getDoc(userDocRef);
+
+            if (userSnapshot.exists()) {
+                const orderedItems = userSnapshot.data().ordered || [];
+                const updatedOrderedItems = orderedItems.filter(item => item.productId !== productId);
+
+                await updateDoc(userDocRef, { ordered: updatedOrderedItems });
+
+                alert("Your order has been cancelled.");
+                alert("Amount will be refunded to your account.");
+                document.querySelector(`.order-item[data-product-id="${productId}"]`).remove();
+            }
+        };
+    </script>
+</body>
+</html>

@@ -5,68 +5,167 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Details - Agridrop</title>
     <style>
-        /* Basic styling for the page */
+        /* Global Styles */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f9f9f9;
         }
+
+        h1, h2, h3, h4, p {
+            margin: 0;
+            padding: 0;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: color 0.3s ease;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #3a964b;
+            transform: scale(1.05);
+        }
+
+        /* Navbar Styles */
         .navbar {
+            background-color: #3a964b;
+            width: 98%;
+            color: white;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 20px;
-            background-color: #4CAF50;
+            padding: 15px 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar h1 {
+            font-size: 28px;
+            font-weight: bold;
             color: white;
         }
-        .logo {
-            margin: 0;
-            font-size: 24px;
+
+        .navbar .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 20px;
         }
+
+        .navbar .nav-links li {
+            transition: transform 0.3s ease;
+        }
+
+        .navbar .nav-links li:hover {
+            transform: scale(1.1);
+        }
+
+        .navbar .nav-links a {
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .navbar .nav-links a:hover {
+            background-color: #2c7a3e;
+        }
+
         .hamburger {
             background: none;
             border: none;
             color: white;
             font-size: 24px;
             cursor: pointer;
+            display: none;
         }
+
+        /* Container and Section Styles */
         .container {
-            padding: 20px;
+            padding: 80px 20px 20px; /* Added top padding to avoid overlap with fixed navbar */
             max-width: 800px;
             margin: 0 auto;
         }
+
+        section {
+            margin: 40px 0;
+        }
+
         .product-detail {
             background: white;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
         .product-detail img {
             max-width: 100%;
             height: auto;
             border-radius: 8px;
         }
+
         .price {
             font-size: 20px;
             color: #4CAF50;
             font-weight: bold;
         }
+
         .buttons {
             margin-top: 20px;
         }
-        .btn {
-            padding: 10px 20px;
-            margin-right: 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
+
+        .service {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, background-color 0.3s ease;
         }
-        .btn:hover {
-            opacity: 0.8;
+
+        .service:hover {
+            transform: scale(1.05);
+            background-color: #f3f3f3;
+        }
+
+        /* Responsiveness */
+        @media (max-width: 768px) {
+            .hamburger {
+                display: block;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                display: none;
+                position: absolute;
+                top: 60px;
+                right: 0;
+                background-color: #3a964b;
+                padding: 10px;
+                width: 100%;
+                text-align: center;
+            }
+
+            .nav-links.show {
+                display: flex;
+            }
         }
     </style>
+    <script type="module" src="../navbarstyle.js" defer></script>
 </head>
 <body>
     <header>
@@ -79,148 +178,203 @@
     <div class="container">
         <h2>Product Details</h2>
         <div id="product-detail" class="product-detail"></div>
-    </div>
+        <script type="module">
+            // Import Firebase modules
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+            import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
+            import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+            import { getAuth } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
 
-    <script type="module">
-        // Import Firebase modules
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
-        import { getAuth } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+            // Firebase configuration
+            const firebaseConfig = {
+                apiKey: "AIzaSyBLCWmhmY1qc_szY7PkLHHooPPZSbTeXj4",
+                authDomain: "agridrop-5ffa8.firebaseapp.com",
+                databaseURL: "https://agridrop-5ffa8-default-rtdb.firebaseio.com",
+                projectId: "agridrop-5ffa8",
+                storageBucket: "agridrop-5ffa8.appspot.com",
+                messagingSenderId: "447104623367",
+                appId: "1:447104623367:web:4938333541fee115559ba2",
+                measurementId: "G-Z66S9DVKZX",
+            };
 
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBLCWmhmY1qc_szY7PkLHHooPPZSbTeXj4",
-            authDomain: "agridrop-5ffa8.firebaseapp.com",
-            databaseURL: "https://agridrop-5ffa8-default-rtdb.firebaseio.com",
-            projectId: "agridrop-5ffa8",
-            storageBucket: "agridrop-5ffa8.appspot.com",
-            messagingSenderId: "447104623367",
-            appId: "1:447104623367:web: 4938333541fee115559ba2",
-            measurementId: "G-Z66S9DVKZX",
-        };
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const database = getDatabase(app);
+            const firestore = getFirestore(app);
+            const auth = getAuth(app);
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-        const firestore = getFirestore(app);
-        const auth = getAuth(app);
+            // Get product ID and category from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+            const category = urlParams.get('category');
 
-        // Get product ID and category from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const productId = urlParams.get('id');
-        const category = urlParams.get('category');
+            if (!productId || !category) {
+                document.getElementById("product-detail").innerHTML = "<p>Product ID or category is missing in the URL.</p>";
+            } else {
+                // Fetch product details and load them
+                async function loadProductDetails() {
+                    try {
+                        const productRef = ref(database, `products/${category}/${productId}`);
+                        const snapshot = await get(productRef);
 
-        if (!productId || !category) {
-            document.getElementById("product-detail").innerHTML = "<p>Product ID or category is missing in the URL.</p>";
-        } else {
-            // Fetch product details and load them
-            async function loadProductDetails() {
-                try {
-                    const productRef = ref(database, `products/${category}/${productId}`);
-                    const snapshot = await get(productRef);
-
-                    if (snapshot.exists()) {
-                        const product = snapshot.val();
-                        document.getElementById("product-detail").innerHTML = `
-                            <img src="${product.image}" alt="Product Image">
-                            <h3><strong>${product.name}</strong></h3>
-                            <p class="price"><strong>Rs:</strong>${product.price}</p>
-                            <p><b>Description:</b>${product.description}</p>
-                            <div class="buttons">
-                                <button class="btn" id="cart-btn">Add to Cart</button>
-                                <button class="btn">Buy Now</button>
-                            </div>
-                        `;
-                        checkIfInCart();
-                        document.getElementById("cart-btn").addEventListener("click", addToCart);
-                    } else {
-                        document.getElementById("product-detail").innerHTML = "<p>Product not found.</p>";
+                        if (snapshot.exists()) {
+                            const product = snapshot.val();
+                            document.getElementById("product-detail").innerHTML = `
+                                <img src="${product.image}" alt="Product Image">
+                                <h3><strong>${product.name}</strong></h3>
+                                <p class="price"><strong>Rs:</strong>${product.price}</p>
+                                <p><b>Description:</b>${product.description}</p>
+                                <div class="buttons">
+                                    <button class="btn" id="cart-btn">Add to Cart</button>
+                                    <button class="btn" id="buy-now-btn">Buy Now</button>
+                                </div>
+                            `;
+                            checkIfInCart();
+                            document.getElementById("cart-btn").addEventListener("click", addToCart);
+                            document.getElementById("buy-now-btn").addEventListener("click", buyNow);
+                        } else {
+                            document.getElementById("product-detail").innerHTML = "<p>Product not found.</p>";
+                        }
+                    } catch (error) {
+                        console.error("Error loading product details:", error);
+                        document.getElementById("product-detail").innerHTML = "<p>Loading product details failed.</p>";
                     }
-                } catch (error) {
-                    console.error("Error loading product details:", error);
-                    document.getElementById("product-detail").innerHTML = "<p> loading product details.</p>";
                 }
-            }
 
-            // Make addToCart function globally accessible
-            window.addToCart = async function() {
-                try {
-                    const user = auth.currentUser ;
-
-                    if (!user) {
-                        alert("Please log in to add products to your cart.");
-                        return;
-                    }
-
-                    const productRef = ref(database, `products/${category}/${productId}`);
-                    const productSnapshot = await get(productRef);
-
-                    if (productSnapshot.exists()) {
-                        const product = productSnapshot.val();
-                        const userDocRef = doc(firestore, `users/${user.uid}`);
-                        const userSnapshot = await getDoc(userDocRef);
-
-                        if (!userSnapshot.exists()) {
-                            await setDoc(userDocRef, { cartItems: [] });
+                // Add to Cart function
+                window.addToCart = async function () {
+                    try {
+                        const isLoggedIn = localStorage.getItem("isLoggedIn");
+                        if (!isLoggedIn || isLoggedIn !== "true") {
+                            alert("Please log in to add products to your cart.");
+                            window.location.href = "../login.html";
+                            return;
                         }
 
-                        // Check if the product is already in the user's cart
-                        const cartItems = userSnapshot.data().cartItems || [];
-                        const existingItemIndex = cartItems.findIndex(item => item.productId === productId);
+                        const user = auth.currentUser;
 
-                        if (existingItemIndex === -1) {
-                            // If the product doesn't exist, add it to the cart
+                        if (!user) {
+                            alert("Please log in to add products to your cart.");
+                            return;
+                        }
+
+                        const productRef = ref(database, `products/${category}/${productId}`);
+                        const productSnapshot = await get(productRef);
+
+                        if (productSnapshot.exists()) {
+                            const product = productSnapshot.val();
+                            const userDocRef = doc(firestore, `users/${user.uid}`);
+                            const userSnapshot = await getDoc(userDocRef);
+
+                            if (!userSnapshot.exists()) {
+                                await setDoc(userDocRef, { cartItems: [] });
+                            }
+
+                            const cartItems = userSnapshot.data().cartItems || [];
+                            const existingItemIndex = cartItems.findIndex(item => item.productId === productId);
+
+                            if (existingItemIndex === -1) {
+                                await updateDoc(userDocRef, {
+                                    cartItems: arrayUnion({
+                                        productId,
+                                        category,
+                                        name: product.name,
+                                        price: product.price,
+                                        quantity: 1,
+                                        image: product.image,
+                                        timestamp: new Date().toISOString(),
+                                    }),
+                                });
+                                alert("Product added to cart!");
+                            } else {
+                                alert("Product is already in your cart.");
+                                window.location.href = "addtocart.html";
+                            }
+                        } else {
+                            alert("Product not found.");
+                        }
+                    } catch (error) {
+                        console.error("Error adding to cart:", error);
+                        alert("Failed to add product to cart.");
+                    }
+                };
+
+                // Buy Now function
+                window.buyNow = async function () {
+                    try {
+                        const isLoggedIn = localStorage.getItem("isLoggedIn");
+                        if (!isLoggedIn || isLoggedIn !== "true") {
+                            alert("Please log in to buy products.");
+                            window.location.href = "../login.html";
+                            return;
+                        }
+
+                        const user = auth.currentUser;
+                        if (!user) {
+                            alert("Please log in to buy products.");
+                            return;
+                        }
+
+                        const productRef = ref(database, `products/${category}/${productId}`);
+                        const productSnapshot = await get(productRef);
+
+                        if (productSnapshot.exists()) {
+                            const product = productSnapshot.val();
+
+                            // Store product price in localStorage as totalAmount
+                            localStorage.setItem("totalAmount", product.price);
+
+                            // First, add to the cart
+                            // await addToCart(); // Ensures the product is in the cart
+                            
+                            // Add the product to the orders array in Firestore
+                            const userDocRef = doc(firestore, `users/${user.uid}`);
                             await updateDoc(userDocRef, {
-                                cartItems: arrayUnion({
+                                ordered: arrayUnion({
                                     productId,
                                     category,
                                     name: product.name,
                                     price: product.price,
-                                    quantity: 1,  // Always add it with quantity 1
+                                    quantity: 1,
                                     image: product.image,
                                     timestamp: new Date().toISOString(),
                                 }),
                             });
-                            alert("Product added to cart!");
+
+                            window.location.href = "checkout1.html"; // Redirect to checkout page
                         } else {
-                            alert("Product is already in your cart.");
-                            window.location.href="addtocart.html";
+                            alert("Product not found.");
                         }
-                    } else {
-                        alert("Product not found.");
+                    } catch (error) {
+                        console.error("Error with Buy Now:", error);
+                        alert("An error occurred. Please try again.");
                     }
-                } catch (error) {
-                    console.error("Error adding to cart:", error);
-                    alert("Failed to add product to cart.");
-                }
-            };
+                };
 
-            async function checkIfInCart() {
-                const user = auth.currentUser ;
-                const cartBtn = document.getElementById("cart-btn");
+                async function checkIfInCart() {
+                    const user = auth.currentUser;
+                    const cartBtn = document.getElementById("cart-btn");
 
-                if (!user) return;
+                    if (!user) return;
 
-                const userDocRef = doc(firestore, `users/${user.uid}`);
-                const userSnapshot = await getDoc(userDocRef);
+                    const userDocRef = doc(firestore, `users/${user.uid}`);
+                    const userSnapshot = await getDoc(userDocRef);
 
-                if (userSnapshot.exists()) {
-                    const cartItems = userSnapshot.data().cartItems || [];
-                    const existingItemIndex = cartItems.findIndex(item => item.productId === productId);
+                    if (userSnapshot.exists()) {
+                        const cartItems = userSnapshot.data().cartItems || [];
+                        const existingItemIndex = cartItems.findIndex(item => item.productId === productId);
 
-                    if (existingItemIndex !== -1) {
-                        // Change button to "Go to Cart"
-                        cartBtn.textContent = "Go to Cart";
-                        cartBtn.onclick = () => {
-                            window.location.href = "addtocart.html";
-                        };
+                        if (existingItemIndex !== -1) {
+                            cartBtn.textContent = "Go to Cart";
+                            cartBtn.onclick = () => {
+                                window.location.href = "addtocart.html";
+                            };
+                        }
                     }
                 }
+
+                window.onload = loadProductDetails;
             }
-
-            window.onload = loadProductDetails;
-        }
-    </script>
+        </script>
 </body>
 </html>

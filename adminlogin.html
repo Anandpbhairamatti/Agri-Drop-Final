@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Agridrop</title>
+    <link rel="stylesheet" href="adminlogin.css">
+</head>
+<body>
+    <div class="form-container">
+        <h2>Admin Login</h2>
+        <form id="adminLoginForm">
+            <label for="loginEmail">Email:</label>
+            <input type="email" id="loginEmail" name="loginEmail" required>
+
+            <label for="loginPassword">Password:</label>
+            <input type="password" id="loginPassword" name="loginPassword" required>
+
+            <button type="submit">Login</button>
+        </form>
+        <p>Don't have an admin account? <a href="adminsignup.html">Sign Up</a></p>
+    </div>
+    <script type="module">
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBLCWmhmY1qc_szY7PkLHHooPPZSbTeXj4",
+            authDomain: "agridrop-5ffa8.firebaseapp.com",
+            projectId: "agridrop-5ffa8",
+            storageBucket: "agridrop-5ffa8.appspot.com",
+            messagingSenderId: "447104623367",
+            appId: "1:447104623367:web:4938333541fee115559ba2",
+            measurementId: "G-Z66S9DVKZX",
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getFirestore(app);
+
+        const adminLoginForm = document.querySelector('#adminLoginForm');
+        adminLoginForm.addEventListener('submit', async function (e) {
+            e.preventDefault(); // Prevent form submission
+
+            const loginEmail = document.getElementById('loginEmail').value.trim();
+            const loginPassword = document.getElementById('loginPassword').value;
+
+            try {
+                // Authenticate admin login
+                const userCredential = await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
+                const user = userCredential.user;
+
+                // Verify if the user has an admin role in Firestore
+                const adminQuery = query(collection(database, 'admins'), where('email', '==', loginEmail));
+                const adminDoc = await getDocs(adminQuery);
+
+                if (adminDoc.empty) {
+                    alert('Access denied. Not an admin account.');
+                    return;
+                }
+
+                // Save user info to localStorage
+                const token = user.accessToken;
+                localStorage.setItem('authToken', token);
+                localStorage.setItem('userEmail', user.email); // Store user email
+               // localStorage.setItem('isLoggedIn', 'true'); // Set login status
+                localStorage.setItem('isAdmin', 'true'); // Confirm admin status
+
+                alert('Login successful!');
+                window.location.href = 'admin.html'; // Redirect to admin dashboard
+            } catch (error) {
+                console.error('Error during login:', error);
+                alert(`Login failed: ${error.message}`);
+            }
+        });
+    </script>
+</body>
+</html>

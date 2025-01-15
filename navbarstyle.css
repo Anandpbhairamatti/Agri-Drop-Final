@@ -1,7 +1,7 @@
 /* Navbar */
 .navbar {
     background-color: #3a964b;
-    /* min-width: 100dvw; */
+    min-width: 100dvw;
     max-width: 100dvw;
     color: #fff;
     display: flex;

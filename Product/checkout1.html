@@ -122,11 +122,18 @@
         const db = getFirestore(app);
         const auth = getAuth();
 
-        let totalAmount = localStorage.getItem("totalAmount") * 100; // Convert to paise
+        // Retrieve totalAmount from localStorage
+        let totalAmount = localStorage.getItem("totalAmount");
+        
+        if (totalAmount) {
+            totalAmount = totalAmount * 100; // Convert to paise (as Razorpay uses paise)
 
-        // Display total amount on the payment button
-        const rzpButton = document.getElementById("rzp-button1");
-        rzpButton.innerText = `Proceed to Payment - ₹${(totalAmount / 100).toFixed(2)}`;
+            // Display total amount on the payment button
+            const rzpButton = document.getElementById("rzp-button1");
+            rzpButton.innerText = `Proceed to Payment - ₹${(totalAmount / 100).toFixed(2)}`;
+        } else {
+            alert("Total amount not found. Please try again.");
+        }
 
         // Handle Firebase Authentication
         onAuthStateChanged(auth, async (user) => {
@@ -181,15 +188,15 @@
                         handler: async function (response) {
                             try {
                                 // Add cart items to ordered array and clear cart
-                                const orderedItems = cartItems.map(item => ({
-                                    ...item,
-                                    timestamp: new Date().toISOString(),
-                                }));
+                                // const orderedItems = cartItems.map(item => ({
+                                //     ...item,
+                                //     timestamp: new Date().toISOString(),
+                                // }));
 
-                                await updateDoc(userRef, {
-                                    ordered: arrayUnion(...orderedItems),
-                                    cartItems: [], // Clear cart
-                                });
+                                // await updateDoc(userRef, {
+                                //     ordered: arrayUnion(...orderedItems),
+                                //     cartItems: [], // Clear cart
+                                // });
 
                                 alert("Payment Successful! Order confirmed.");
                                 alert(`Payment ID: ${response.razorpay_payment_id}`);
